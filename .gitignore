@@ -1,4 +1,4 @@
 node_modules
 *.log
 package-lock.json
-data/strava_config
+koop-strava/data/strava_config
