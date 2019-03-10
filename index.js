@@ -11,7 +11,7 @@
 // e.g. /sample/FeatureServer/0/query
 const provider = {
   type: 'provider',
-  name: 'sample',
+  name: 'strava',
   hosts: false, // if true, also adds disableIdParam
   disableIdParam: true, // if true, adds to path and req.params
   Controller: require('./controller'),

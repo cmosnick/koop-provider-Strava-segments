@@ -7,6 +7,8 @@
 */
 const request = require('request').defaults({gzip: true, json: true})
 const config = require('config')
+const strava = require('strava-v3')
+var polyline = require('@mapbox/polyline')
 
 function Model (koop) {}
 
@@ -22,28 +24,69 @@ function Model (koop) {}
 // req.params.layer
 // req.params.method
 Model.prototype.getData = function (req, callback) {
-  const key = config.trimet.key
 
-  // Call the remote API with our developer key
-  request(`https://developer.trimet.org/ws/v2/vehicles/onRouteOnly/false/appid/${key}`, (err, res, body) => {
-    if (err) return callback(err)
+  // Get segment
+  strava.segments.get({id: 229781}, (err, payload) => {
+    if(err){
+      console.log(err);
+      callback(err);
+      return;
+    }
 
-    // translate the response into geojson
-    const geojson = translate(body)
+    if(payload.errors) {
+      console.log(payload.errors);
+      callback(payload.errors);
+      return;
+    }
 
-    // Optional: cache data for 10 seconds at a time by setting the ttl or "Time to Live"
-    // geojson.ttl = 10
+    var singleGeoJson = translateSingle(payload);
+    var geoJson = {
+      type: "FeatureCollection",
+      features: [singleGeoJson]
+    };
+  
+    callback(null, geoJson);
+  });
 
-    // Optional: Service metadata and geometry type
-    // geojson.metadata = {
-    //   title: 'Koop Sample Provider',
-    //   description: `Generated from ${url}`,
-    //   geometryType: 'Polygon' // Default is automatic detection in Koop
-    // }
+  function translateSingle(input) {
+    // Convert polyline geom in response from polyline to geojson
+    if(input.map && input.map.polyline) {
+      var geom = polyline.toGeoJSON(input.map.polyline) 
+    } else {
+      // No geom in returned item
+      var geom = null;
+    }
 
-    // hand off the data to Koop
-    callback(null, geojson)
-  })
+    // Add all attributes and geojson into larger geojson
+    var geoJson = {type: "Feature"}
+    geoJson.properties = input;
+    geoJson.geometry = geom;
+    // geoJson.properties.idField = "id";
+    console.log(geoJson);
+
+    return geoJson;
+  }
+
+  // // Call the remote API with our developer key
+  // request(`https://developer.trimet.org/ws/v2/vehicles/onRouteOnly/false/appid/${key}`, (err, res, body) => {
+  //   if (err) return callback(err)
+
+  //   // translate the response into geojson
+  //   const geojson = translate(body)
+
+  //   // Optional: cache data for 10 seconds at a time by setting the ttl or "Time to Live"
+  //   // geojson.ttl = 10
+
+  //   // Optional: Service metadata and geometry type
+  //   // geojson.metadata = {
+  //   //   title: 'Koop Sample Provider',
+  //   //   description: `Generated from ${url}`,
+  //   //   geometryType: 'Polygon' // Default is automatic detection in Koop
+  //   // }
+
+  //   // hand off the data to Koop
+  //   callback(null, geojson)
+  // })
 }
 
 function translate (input) {

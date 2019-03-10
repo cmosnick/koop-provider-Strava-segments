@@ -75,3 +75,15 @@ By default, AWS Lambda has a 3 second timeout and only 128MB memory. If your Koo
 - run `npm init` and update the fields
   - Choose a name like `koop-provider-foo`
 - run `npm publish`
+
+
+
+
+
+
+# cmosnick instructions:
+- npm install
+- mkdir data
+- cp cp node_modules/strava-v3/strava_config data/strava_config
+- Add strava api access tokens and info to data/strava_config
+- 
