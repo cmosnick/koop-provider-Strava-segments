@@ -19,7 +19,8 @@
     "koop-output-geoservices": "^2.0.0",
     "nodemon": "^1.18.10",
     "request": "^2.79.0",
-    "strava-v3": "^1.14.0"
+    "strava-v3": "^1.14.0",
+    "terraformer": "^1.0.9"
   },
   "author": "Daniel Fenton",
   "license": "Apache-2.0",

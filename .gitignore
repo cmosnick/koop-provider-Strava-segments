@@ -1,2 +1,4 @@
 node_modules
 *.log
+package-lock.json
+data/strava_config
