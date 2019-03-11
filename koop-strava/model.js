@@ -67,6 +67,9 @@ Model.prototype.getData = function (req, callback) {
       callback("");
       return;
     }
+  } else if(req.f) {
+    callback(null, "");
+    return;
   } else {
     callback("");
     return;

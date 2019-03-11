@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title></title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.27/"></script>
+    <style>
+        html, body, #map {
+          height: 100%;
+          padding: 0;
+          margin: 0;
+        }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+    <script>
+      require(["esri/map", "esri/geometry/Extent", "esri/SpatialReference", "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer", "esri/symbols/SimpleLineSymbol", "esri/geometry/Extent", "esri/graphic", "esri/geometry/Polyline", "dojo/on", "dojo/domReady!"], 
+      function(Map, Extent, SpatialReference, FeatureLayer, SimpleRenderer, SimpleLineSymbol, Extent, Graphic, PolyLine, on) {
+        // Web map using web mercator (3857)
+        map = new Map("map", {
+          basemap: "topo",
+          extent: new Extent(-9759508.76, 5153852.46, -9754177.27, 5159585.24, new SpatialReference(3857)),
+        }, "map");
+
+        // Add strava layer
+        stravaLayer = new FeatureLayer("http://localhost:8080/strava/FeatureServer/0/");
+        layerRenderer = new SimpleRenderer(new SimpleLineSymbol());
+        map.addLayer(stravaLayer);
+
+        on(map, 'extent-change', function(e){
+          console.log(e);
+          extent = new Extent(e.extent);
+
+          // Send event to layer to be queried
+          const http = new XMLHttpRequest();
+          const url="http://localhost:8080/strava/FeatureServer/0/query?geometryType=esriGeometryEnvelope&geometry="+ JSON.stringify(extent.toJson());
+          http.open("GET", url);
+          http.send();
+
+          http.onreadystatechange = function() {
+            map.graphics.clear();
+            if(this.readyState==4 && this.status==200 && http.responseText){
+              console.log(http.responseText);
+
+              // Get array of geometries and turn into features
+              responseJson = JSON.parse(http.responseText);
+              graphics = responseJson.features.map(jsonToGraphic)
+
+              console.log(graphics);
+
+              graphics.map((graphic) => {
+                map.graphics.add(graphic);
+              });
+            }
+          };
+        });
+
+        function jsonToGraphic(featureJson) {
+          console.log(featureJson);
+          graphic = new Graphic(new PolyLine(featureJson.geometry), new SimpleLineSymbol(), featureJson.attributes);
+          return graphic;
+        }
+      });
+
+
+      
+    </script>
+  </body>
+</html>

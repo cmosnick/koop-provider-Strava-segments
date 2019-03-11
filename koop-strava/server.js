@@ -5,9 +5,11 @@ process.on('SIGTERM', () => process.exit(0))
 // Initialize Koop
 const Koop = require('koop')
 const koop = new Koop()
+const FeatureServer = require('koop-output-geoservices')
 
 // Install the Sample Provider
 const provider = require('./')
+koop.register(FeatureServer)
 koop.register(provider)
 
 if (process.env.DEPLOY === 'export') {
