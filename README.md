@@ -13,6 +13,7 @@
 ## Frameworks used:
 #### Server:
 - [koop.js](https://koopjs.github.io/)
+- [Strava API](https://developers.strava.com/docs/reference/#api-Segments-exploreSegments) segments explorer endpoint
 - forked from [koop-provider-sample](https://github.com/koopjs/koop-provider-sample)
 - inspired by [Jking-GIS/koop-provider-Strava](https://github.com/Jking-GIS/koop-provider-Strava)
 - [strava-v3](https://www.npmjs.com/package/strava-v3) for easy strava api access
