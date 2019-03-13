@@ -10,14 +10,16 @@
     "docker-build": "docker build -t koop-yelp .",
     "docker-start": "docker run -it -p 8080:8080 koop-yelp",
     "test": "mocha test/",
-    "start": "node yelp.js"
+    "start": "nodemon server.js"
   },
   "dependencies": {
     "async": "^1.5.2",
     "config": "^1.25.1",
+    "koop": "^3.10.1",
+    "koop-output-geoservices": "^2.0.0",
     "lodash": "^4.17.4",
+    "nodemon": "^1.18.10",
     "proj4": "^2.3.17",
-    "yelp": "^1.0.2",
     "yelp-fusion": "^2.2.1"
   },
   "author": "Daniel Fenton",

@@ -1,11 +1,11 @@
 'use strict'
-const YelpClient = require('yelp')
+const yelpClient = require('yelp-fusion')
 const proj4 = require('proj4')
 const proj = proj4('GOOGLE', 'WGS84')
 const config = require('config')
 const _ = require('lodash')
 const async = require('async')
-const client = new YelpClient(config.yelp)
+const client = yelpClient.client(config.token);
 
 
 module.exports = function (koop) {
@@ -14,6 +14,7 @@ module.exports = function (koop) {
       return callback(null, {type: 'FeatureCollection', count: 2001, features: []})
     }
     const queries = buildQueries(req.query)
+    console.log("queries " + JSON.stringify(queries))
     const featureCollection = {
       type: 'FeatureCollection',
       features: []
@@ -23,13 +24,19 @@ module.exports = function (koop) {
 
     function search (query, callback) {
       searchYelp(query, function (err, features) {
-        if (err) return callback()
+        if (err) {
+          console.log(err)
+          return callback()
+        }
         featureCollection.features = featureCollection.features.concat(features)
         callback()
       })
     }
 
     function finish (err) {
+      if(err) {
+        console.log(err)
+      }
       callback(err, featureCollection)
     }
   }
@@ -37,12 +44,18 @@ module.exports = function (koop) {
 
 // Wrap the call to Yelp, this will make testing easier and decouple us from the specific client lib
 function searchYelp (query, callback) {
-  client.search(query, function (err, rawResponse) {
-    if (err) return callback(err)
-    const features = translate(rawResponse)
+  client.search(query).then( response => {
+
+    // console.log(response)
+    const features = translate(response.jsonBody)
+    if(!features.length){
+      console.log("no features")
+    }
     console.log('Search returned', features.length, 'results')
     callback(null, features)
-  })
+  }).catch(err => {
+    console.log(err);
+  });
 }
 
 function buildQueries (options) {
@@ -69,12 +82,12 @@ function buildQuery (options, geometry) {
   if (geometry || options.geometry) {
     const bbox = geometry || JSON.parse(options.geometry)
     query.bounds = setBounds(bbox)
-  } else if (!options.location) {
+  } else if (!options.location && !(options.latitude && options.longitude)) {
     query.location = 'Washington, DC'
   }
-  query.term = setTerm(options)
-  query.sort = setSort(options)
-  query.limit = 20
+  // query.term = setTerm(options)
+  // query.sort = setSort(options)
+  query.limit = 50
   return query
 }
 
@@ -108,19 +121,20 @@ function setSort (options) {
 
 // Map accross all elements from a Yelp respsonse and translate it into a feature collection
 function translate (data) {
+  console.log(data.businesses)
   // protect ourself in case the request did not return any features
-  if (data.businesses) return data.businesses.map(formatFeature)
+  if (data.businesses) { return data.businesses.map(formatFeature) } else console.log("no businesses")
 }
 
 // This function takes a single element from the yelp response and translates it to GeoJSON
 function formatFeature (biz) {
   const loc = biz.location
-  return {
+  const feature = {
     type: 'Feature',
-    geometry: {
+    geometry: (biz.coordinates) ? ({
       type: 'Point',
-      coordinates: [loc.coordinate.longitude, loc.coordinate.latitude]
-    },
+      coordinates: [biz.coordinates.longitude, biz.coordinates.latitude]
+    }) : null,
     properties: {
       name: biz.name,
       phone: biz.display_phone,
@@ -140,6 +154,7 @@ function formatFeature (biz) {
       term: 'String' // We put a dummy term in here so ArcGIS knows this is a string field. It will allow us to filter
     }
   }
+  return feature;
 }
 
 function splitGeometry (bbox) {
