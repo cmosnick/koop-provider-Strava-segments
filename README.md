@@ -1,4 +1,5 @@
 # Instructions for setup:
+### Start Strava provoider:
 - `cd koop-strava`
 - `npm install`
 - `mkdir data`
@@ -6,7 +7,14 @@
 - Add strava api access tokens and info to data/strava_config
 - `npm start`
 
-- simple webpage is in web/index.html
+### Start Yelp provider:
+- `cd koop-yelp`
+- `npm install`
+- Add yelp api token to config/default.json
+- `npm start`
+
+### Open static webpage in browser:
+- Simple webpage is in web/index.html
 
 
 
@@ -14,7 +22,8 @@
 #### Server:
 - [koop.js](https://koopjs.github.io/)
 - [Strava API](https://developers.strava.com/docs/reference/#api-Segments-exploreSegments) segments explorer endpoint
-- forked from [koop-provider-sample](https://github.com/koopjs/koop-provider-sample)
+- forked from [koop-provider-sample](https://github.com/koopjs/koop-provider-sample) for strava provider
+- forked from [koop-provider-yelp](https://github.com/koopjs/koop-provider-yelp) for yelp provider
 - inspired by [Jking-GIS/koop-provider-Strava](https://github.com/Jking-GIS/koop-provider-Strava)
 - [strava-v3](https://www.npmjs.com/package/strava-v3) for easy strava api access
 - [@mapbox/polyline](https://www.npmjs.com/package/@mapbox/polyline) for easy decoding from Strava's [polyline](https://developers.google.com/maps/documentation/utilities/polylinealgorithm) geometry format 
