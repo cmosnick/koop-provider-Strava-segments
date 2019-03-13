@@ -22,3 +22,14 @@
 
 #### Front end:
 - [ArcGIS API for JavaScript](https://developers.arcgis.com/javascript/latest/api-reference/index.html) for quick and easy mapping on the front end
+
+
+## Future Improvements:
+- Add in Yelp provider to query restaurants within buffer of returned segments
+- Update symbology of map
+- Display more segemnt info in popup or side bar
+- Improve koop provider speed
+- Configure provider as a service on personal website
+- Add more Strava provider endpoints and query parameters
+- More thorough testing ofstrava provider results- looks like a limited number are returned
+- Add automatic refreshing of access token for Strava api using OAuth
