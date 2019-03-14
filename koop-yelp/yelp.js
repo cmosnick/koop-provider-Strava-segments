@@ -6,6 +6,7 @@ const config = require('config')
 const _ = require('lodash')
 const async = require('async')
 const client = yelpClient.client(config.token);
+const terraformer = require('terraformer')
 
 
 module.exports = function (koop) {
@@ -61,7 +62,7 @@ function searchYelp (query, callback) {
 function buildQueries (options) {
   let queries
   if (options.geometry) {
-    const geometries = splitGeometry(JSON.parse(options.geometry))
+    const geometries = splitGeometry(options.geometry)
     queries = geometries.map(geometry => buildQuery(options, geometry))
   } else {
     queries = [buildQuery(options)]
@@ -184,4 +185,10 @@ function topHalf (bbox) {
 
 function avgOf2 (a, b) {
   return (a + b) / 2
+}
+
+function getMidPoint(geometry) {
+  const minPoint = terraformer.Tools.positionToGeographic([geometry.xmin, geometry.ymin])
+  const maxPoint = terraformer.Tools.positionToGeographic([geometry.xmax, geometry.ymax])
+  return [avgOf2(minPoint[1], maxPoint[1]), avgOf2(minPoint[0], maxPoint[0])]
 }

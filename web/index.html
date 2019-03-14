@@ -18,35 +18,76 @@
   <body>
     <div id="map"></div>
     <script>
-      require(["esri/map", "esri/geometry/Extent", "esri/SpatialReference", "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer", "esri/symbols/SimpleLineSymbol", "esri/geometry/Extent", "esri/graphic", "esri/geometry/Polyline", "esri/InfoTemplate", "esri/Color",  "dojo/on", "dojo/domReady!"], 
-      function(Map, Extent, SpatialReference, FeatureLayer, SimpleRenderer, SimpleLineSymbol, Extent, Graphic, PolyLine, InfoTemplate, Color, on) {
+      require(["esri/map", "esri/geometry/Extent", "esri/SpatialReference", "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer", "esri/symbols/SimpleLineSymbol", "esri/geometry/Extent", "esri/graphic", "esri/geometry/Polyline", "esri/geometry/Point", "esri/InfoTemplate", "esri/Color", "esri/geometry/webMercatorUtils",  "esri/layers/GraphicsLayer", "esri/symbols/PictureMarkerSymbol", "dojo/on", "dojo/domReady!"], 
+      function(Map, Extent, SpatialReference, FeatureLayer, SimpleRenderer, SimpleLineSymbol, Extent, Graphic, PolyLine, Point, InfoTemplate, Color, webMercatorUtils, GraphicsLayer, PictureMarkerSymbol, on) {
         // Web map using web mercator (3857)
         map = new Map("map", {
           basemap: "gray",
           extent: new Extent(-9759508.76, 5153852.46, -9754177.27, 5159585.24, new SpatialReference(3857)),
         }, "map");
 
+        // Create Strava graphics layer
+        stravaGL = new GraphicsLayer({
+          infoTemplate: new InfoTemplate({
+            title: "${name}",
+            content: "Distance: ${distance}m<br>\
+            Elevation Change: ${elev_difference}m"
+          })
+        });
+        // Create yelp graphics layer
+        yelpGL = new GraphicsLayer({
+          infoTemplate: new InfoTemplate({
+            title: "${name}",
+            content: "Rating: ${rating}<br>\
+            <a href='${yelp_page}' target=\"_blank\">More info...</a>"
+          })
+        });
+
+        map.addLayers([stravaGL, yelpGL]);
+
         on(map, 'extent-change', function(e){
           console.log(e);
           extent = new Extent(e.extent);
 
-          // Send event to layer to be queried
-          const http = new XMLHttpRequest();
-          const url="http://localhost:8080/strava/FeatureServer/0/query?geometryType=esriGeometryEnvelope&geometry="+ JSON.stringify(extent.toJson());
-          http.open("GET", url);
-          http.send();
+          // Query Strava provider
+          const stravaHttp = new XMLHttpRequest();
+          const stravaUrl="http://localhost:8080/strava/FeatureServer/0/query?geometryType=esriGeometryEnvelope&geometry="+ JSON.stringify(extent.toJson());
+          stravaHttp.open("GET", stravaUrl);
+          stravaHttp.send();
 
-          http.onreadystatechange = function() {
-            if(this.readyState==4 && this.status==200 && http.responseText){
-              map.graphics.clear();
+          stravaHttp.onreadystatechange = function() {
+            if(this.readyState==4 && this.status==200 && stravaHttp.responseText){
+              stravaGL.clear();
               // Get array of geometries and turn into features
-              responseJson = JSON.parse(http.responseText);
+              responseJson = JSON.parse(stravaHttp.responseText);
               responseJson.features.forEach(featureJson => {
-                map.graphics.add(new Graphic(new PolyLine(featureJson.geometry), new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color("#ae2a6d"), 2), featureJson.attributes, new InfoTemplate({
+                stravaGL.add(new Graphic(new PolyLine(featureJson.geometry), new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color("#ae2a6d"), 2), featureJson.attributes, new InfoTemplate({
                   title: "${name}",
                   content: "Distance: ${distance}m<br>\
                   Elevation Change: ${elev_difference}m"
                 })));
+              });
+            }
+          };
+
+          // Query Yelp Provider
+          const yelpHttp = new XMLHttpRequest();
+          const midPoint = webMercatorUtils.webMercatorToGeographic(extent.getCenter())
+          const midLat = midPoint.y;
+          const midLong = midPoint.x;
+          const yelpUrl="http://localhost:8081/yelp/FeatureServer/0/query?term=restaurants&" + 
+            "latitude=" + midLat +
+            "&longitude=" + midLong;
+          yelpHttp.open("GET", yelpUrl);
+          yelpHttp.send();
+
+          yelpHttp.onreadystatechange = function() {
+            if(this.readyState==4 && this.status==200 && yelpHttp.responseText){
+              yelpGL.clear();
+              // Get array of geometries and turn into features
+              responseJson = JSON.parse(yelpHttp.responseText);
+              responseJson.features.forEach(featureJson => {
+                yelpGL.add(new Graphic(new Point(featureJson.geometry), new PictureMarkerSymbol('./FireflyIconsWarm/1.png', 30, 30), featureJson.attributes));
               });
             }
           };
