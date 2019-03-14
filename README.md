@@ -28,17 +28,22 @@
 - [strava-v3](https://www.npmjs.com/package/strava-v3) for easy strava api access
 - [@mapbox/polyline](https://www.npmjs.com/package/@mapbox/polyline) for easy decoding from Strava's [polyline](https://developers.google.com/maps/documentation/utilities/polylinealgorithm) geometry format 
 - [terraformer](https://www.npmjs.com/package/terraformer) for easy conversion from webmap's web mercator extent to Geographic coordinates
+- [yelp-fusion](https://www.npmjs.com/package/yelp-fusion) client to replace old client
 
 #### Front end:
 - [ArcGIS API for JavaScript](https://developers.arcgis.com/javascript/latest/api-reference/index.html) for quick and easy mapping on the front end
 
-
 ## Future Improvements:
 - Add in Yelp provider to query restaurants within buffer of returned segments
 - Update symbology of map
-- Display more segemnt info in popup or side bar
+- Display more segment info in popup or side bar
 - Improve koop provider speed
 - Configure provider as a service on personal website
 - Add more Strava provider endpoints and query parameters
 - More thorough testing ofstrava provider results- looks like a limited number are returned
 - Add automatic refreshing of access token for Strava api using OAuth
+- Improve infoWindows and information displayed on them
+- Make more advanced queries:
+  - Give higher priority to yelp businesses in closer proximity to bike segments
+  - Filter yelp restaurants by rating- possibly symbolize them woth more emphasis
+- Provide basemap switcher
