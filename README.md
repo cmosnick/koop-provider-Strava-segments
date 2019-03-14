@@ -47,3 +47,4 @@
   - Give higher priority to yelp businesses in closer proximity to bike segments
   - Filter yelp restaurants by rating- possibly symbolize them woth more emphasis
 - Provide basemap switcher
+-  Completely update Yelp koop provider to new yelp-fusion specs, and submit PR to main repo
